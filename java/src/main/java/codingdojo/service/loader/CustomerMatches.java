@@ -1,11 +1,12 @@
-package codingdojo;
+package codingdojo.service.loader;
+
+import codingdojo.domain.data.model.Customer;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class CustomerMatches {
-    private Collection<Customer> duplicates = new ArrayList<>();
-    private String matchTerm;
+    private final Collection<Customer> duplicates = new ArrayList<>();
     private Customer customer;
 
     public Customer getCustomer() {
@@ -22,14 +23,6 @@ public class CustomerMatches {
 
     public Collection<Customer> getDuplicates() {
         return duplicates;
-    }
-
-    public String getMatchTerm() {
-        return matchTerm;
-    }
-
-    public void setMatchTerm(String matchTerm) {
-        this.matchTerm = matchTerm;
     }
 
     public void setCustomer(Customer customer) {

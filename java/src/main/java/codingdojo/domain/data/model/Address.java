@@ -1,4 +1,4 @@
-package codingdojo;
+package codingdojo.domain.data.model;
 
 public class Address {
     private String street;

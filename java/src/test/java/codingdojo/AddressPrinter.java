@@ -1,5 +1,7 @@
 package codingdojo;
 
+import codingdojo.domain.data.model.Address;
+
 public class AddressPrinter {
     public static String printAddress(Address address) {
         if (address == null) {

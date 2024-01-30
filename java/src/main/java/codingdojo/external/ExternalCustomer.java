@@ -1,4 +1,7 @@
-package codingdojo;
+package codingdojo.external;
+
+import codingdojo.domain.data.model.Address;
+import codingdojo.domain.data.model.ShoppingList;
 
 import java.util.List;
 
@@ -9,6 +12,7 @@ public class ExternalCustomer {
     private List<ShoppingList> shoppingLists;
     private String externalId;
     private String companyNumber;
+    private Integer bonusPointsBalance;
 
     public String getExternalId() {
         return externalId;
@@ -62,4 +66,11 @@ public class ExternalCustomer {
         this.address = address;
     }
 
+    public Integer getBonusPointsBalance() {
+        return bonusPointsBalance;
+    }
+
+    public void setBonusPointsBalance(Integer bonusPointsBalance) {
+        this.bonusPointsBalance = bonusPointsBalance;
+    }
 }
