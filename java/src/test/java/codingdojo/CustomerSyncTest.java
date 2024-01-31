@@ -1,5 +1,12 @@
 package codingdojo;
 
+import codingdojo.domain.data.model.Address;
+import codingdojo.domain.data.model.Customer;
+import codingdojo.domain.data.model.CustomerType;
+import codingdojo.domain.data.model.ShoppingList;
+import codingdojo.external.ExternalCustomer;
+import codingdojo.service.sync.CustomerSync;
+import codingdojo.service.exception.ConflictException;
 import org.approvaltests.Approvals;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,6 +29,7 @@ public class CustomerSyncTest {
 
         ExternalCustomer externalCustomer = createExternalCompany();
         externalCustomer.setExternalId(externalId);
+        externalCustomer.setBonusPointsBalance(10);
 
         Customer customer = createCustomerWithSameCompanyAs(externalCustomer);
         customer.setExternalId(externalId);
@@ -46,11 +54,40 @@ public class CustomerSyncTest {
 
         ExternalCustomer externalCustomer = createExternalPrivatePerson();
         externalCustomer.setExternalId(externalId);
+        externalCustomer.setBonusPointsBalance(30);
 
         Customer customer = new Customer();
         customer.setCustomerType(CustomerType.PERSON);
         customer.setInternalId("67576");
         customer.setExternalId(externalId);
+        customer.setBonusPointsBalance(10);
+
+        FakeDatabase db = new FakeDatabase();
+        db.addCustomer(customer);
+        CustomerSync sut = new CustomerSync(db);
+
+        StringBuilder toAssert = printBeforeState(externalCustomer, db);
+
+        // ACT
+        boolean created = sut.syncWithDataLayer(externalCustomer);
+
+        assertFalse(created);
+        printAfterState(db, toAssert);
+        Approvals.verify(toAssert);
+    }
+
+    @Test
+    public void syncPrivatePersonBonusPointsBalance(){
+        String externalId = "12345";
+
+        ExternalCustomer externalCustomer = createExternalPrivatePerson();
+        externalCustomer.setExternalId(externalId);
+
+        Customer customer = new Customer();
+        customer.setCustomerType(CustomerType.PERSON);
+        customer.setInternalId("67576");
+        customer.setExternalId(externalId);
+        customer.setBonusPointsBalance(10);
 
         FakeDatabase db = new FakeDatabase();
         db.addCustomer(customer);
@@ -96,6 +133,7 @@ public class CustomerSyncTest {
 
         ExternalCustomer externalCustomer = createExternalCompany();
         externalCustomer.setExternalId("12345");
+        externalCustomer.setBonusPointsBalance(10);
 
         FakeDatabase db = new FakeDatabase();
         CustomerSync sut = new CustomerSync(db);
@@ -115,6 +153,7 @@ public class CustomerSyncTest {
 
         ExternalCustomer externalCustomer = createExternalPrivatePerson();
         externalCustomer.setExternalId("12345");
+        externalCustomer.setBonusPointsBalance(10);
 
         FakeDatabase db = new FakeDatabase();
         CustomerSync sut = new CustomerSync(db);
