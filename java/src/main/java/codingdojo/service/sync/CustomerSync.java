@@ -1,6 +1,7 @@
 package codingdojo.service.sync;
 
 import codingdojo.domain.data.access.CustomerDataAccess;
+import codingdojo.domain.data.access.CustomerDataAccess.CreateOrUpdateRecordResult;
 import codingdojo.domain.data.access.CustomerDataLayer;
 import codingdojo.domain.data.model.Customer;
 import codingdojo.domain.data.model.CustomerType;
@@ -23,7 +24,7 @@ public class CustomerSync {
         this(new CustomerDataAccess(customerDataLayer));
     }
 
-    CustomerSync(CustomerDataAccess customerDataAccess) {
+    private CustomerSync(CustomerDataAccess customerDataAccess) {
         this.customerDataAccess = customerDataAccess;
         typeCustomerSyncMap.put(CustomerType.COMPANY, new CompanyCustomerSync(this.customerDataAccess));
         typeCustomerSyncMap.put(CustomerType.PERSON, new PersonCustomerSync(this.customerDataAccess));
@@ -32,23 +33,26 @@ public class CustomerSync {
     public boolean syncWithDataLayer(ExternalCustomer externalCustomer) {
         CustomerType customerType = externalCustomer.isCompany() ? CustomerType.COMPANY : CustomerType.PERSON;
         CustomerMatches customerMatches = typeCustomerSyncMap.get(customerType).loadThenSyncCustomData(externalCustomer);
-        Customer customer = customerMatches.getCustomer();
-        customer.setName(externalCustomer.getName());
-        customer.setPreferredStore(externalCustomer.getPreferredStore());
-        customer.setAddress(externalCustomer.getPostalAddress());
-        CustomerDataAccess.CreateOrUpdateRecordResult createOrUpdateRecordResult =
-                customerDataAccess.createOrUpdateRecord(customer);
+
+        CreateOrUpdateRecordResult createOrUpdateRecordResult = createOrUpdateCustomerData(externalCustomer, customerMatches);
         updateOrCreateDuplicates(externalCustomer, customerMatches);
         updateShoppingList(externalCustomer, createOrUpdateRecordResult.getCustomer());
         return createOrUpdateRecordResult.isCreated();
     }
 
+    private CreateOrUpdateRecordResult createOrUpdateCustomerData(ExternalCustomer externalCustomer, CustomerMatches customerMatches) {
+        Customer customer = customerMatches.getCustomer();
+        customer.setName(externalCustomer.getName());
+        customer.setPreferredStore(externalCustomer.getPreferredStore());
+        customer.setAddress(externalCustomer.getPostalAddress());
+        return customerDataAccess.createOrUpdateRecord(customer);
+    }
+
     private void updateOrCreateDuplicates(ExternalCustomer externalCustomer, CustomerMatches customerMatches) {
-        if (!customerMatches.hasDuplicates()) {
-            return;
+        if (customerMatches.hasDuplicates()) {
+            customerMatches.getDuplicates()
+                    .forEach(duplicate -> updateOrCreateDuplicate(duplicate, externalCustomer));
         }
-        customerMatches.getDuplicates()
-                .forEach(duplicate -> updateOrCreateDuplicate(duplicate, externalCustomer));
     }
 
     private void updateOrCreateDuplicate(CustomerDuplicate duplicate, ExternalCustomer externalCustomer) {

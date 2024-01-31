@@ -13,13 +13,14 @@ class PersonCustomerSync implements TypeCustomerSync {
 
     private final PersonCustomerLoader personCustomerLoader;
 
-    PersonCustomerSync(CustomerDataAccess customerDataAccess) {
+    public PersonCustomerSync(CustomerDataAccess customerDataAccess) {
         personCustomerLoader = new PersonCustomerLoader(customerDataAccess);
     }
 
     public CustomerMatches loadThenSyncCustomData(ExternalCustomer externalCustomer) {
         CustomerMatches customerMatches = personCustomerLoader.loadPerson(externalCustomer);
         Customer customer = customerMatches.getCustomer();
+
         if (customerMatches.isNewCustomer()) {
             customer = new Customer();
             customer.setExternalId(externalCustomer.getExternalId());

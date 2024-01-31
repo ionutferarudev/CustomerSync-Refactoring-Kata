@@ -11,7 +11,7 @@ class CompanyCustomerSync implements TypeCustomerSync {
 
     private final CompanyCustomerLoader companyCustomerLoader;
 
-    CompanyCustomerSync(CustomerDataAccess customerDataAccess) {
+    public CompanyCustomerSync(CustomerDataAccess customerDataAccess) {
         companyCustomerLoader = new CompanyCustomerLoader(customerDataAccess);
     }
 
