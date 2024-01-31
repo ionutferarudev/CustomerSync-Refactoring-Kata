@@ -3,6 +3,9 @@ package codingdojo.domain.data.access;
 import codingdojo.domain.data.model.Customer;
 import codingdojo.domain.data.model.ShoppingList;
 
+import static codingdojo.domain.data.access.CustomerDataAccess.CreateOrUpdateRecordResult.CREATED;
+import static codingdojo.domain.data.access.CustomerDataAccess.CreateOrUpdateRecordResult.UPDATED;
+
 public class CustomerDataAccess {
 
     private final CustomerDataLayer customerDataLayer;
@@ -33,9 +36,9 @@ public class CustomerDataAccess {
 
     public CreateOrUpdateRecordResult createOrUpdateRecord(Customer customer) {
         if (customer.getInternalId() == null) {
-            return new CreateOrUpdateRecordResult(true, createCustomerRecord(customer));
+            return new CreateOrUpdateRecordResult(CREATED, createCustomerRecord(customer));
         }
-        return new CreateOrUpdateRecordResult(false, updateCustomerRecord(customer));
+        return new CreateOrUpdateRecordResult(UPDATED, updateCustomerRecord(customer));
     }
 
     public void updateShoppingList(Customer customer, ShoppingList consumerShoppingList) {
@@ -45,6 +48,9 @@ public class CustomerDataAccess {
     }
 
     public static class CreateOrUpdateRecordResult {
+        public static final boolean CREATED = true;
+        public static final boolean UPDATED = false;
+
         private final boolean created;
         private final Customer customer;
 

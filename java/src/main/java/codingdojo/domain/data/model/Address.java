@@ -1,9 +1,9 @@
 package codingdojo.domain.data.model;
 
 public class Address {
-    private String street;
-    private String city;
-    private String postalCode;
+    private final String street;
+    private final String city;
+    private final String postalCode;
 
     public Address(String street, String city, String postalCode) {
         this.street = street;
@@ -19,19 +19,7 @@ public class Address {
         return postalCode;
     }
 
-    public void setPostalCode(String postalCode) {
-        this.postalCode = postalCode;
-    }
-
     public String getCity() {
         return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public void setStreet(String street) {
-        this.street = street;
     }
 }

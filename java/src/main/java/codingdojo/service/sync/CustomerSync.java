@@ -7,6 +7,7 @@ import codingdojo.domain.data.model.CustomerType;
 import codingdojo.domain.data.model.ShoppingList;
 import codingdojo.external.ExternalCustomer;
 import codingdojo.service.loader.CustomerMatches;
+import codingdojo.service.loader.CustomerMatches.CustomerDuplicate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class CustomerSync {
 
-    protected final CustomerDataAccess customerDataAccess;
+    private final CustomerDataAccess customerDataAccess;
 
     private final Map<CustomerType, TypeCustomerSync> typeCustomerSyncMap = new HashMap<>();
 
@@ -46,17 +47,18 @@ public class CustomerSync {
         if (!customerMatches.hasDuplicates()) {
             return;
         }
-        customerMatches.getDuplicates().forEach(duplicate -> updateOrCreateDuplicate(duplicate, externalCustomer));
+        customerMatches.getDuplicates()
+                .forEach(duplicate -> updateOrCreateDuplicate(duplicate, externalCustomer));
     }
 
-    private void updateOrCreateDuplicate(Customer duplicate, ExternalCustomer externalCustomer) {
-        if (duplicate == null) {
-            duplicate = new Customer();
-            duplicate.setExternalId(externalCustomer.getExternalId());
-            duplicate.setMasterExternalId(externalCustomer.getExternalId());
+    private void updateOrCreateDuplicate(CustomerDuplicate duplicate, ExternalCustomer externalCustomer) {
+        Customer customer = duplicate.getCustomer();
+        if (duplicate.isNew()) {
+            customer.setExternalId(externalCustomer.getExternalId());
+            customer.setMasterExternalId(externalCustomer.getExternalId());
         }
-        duplicate.setName(externalCustomer.getName());
-        customerDataAccess.createOrUpdateRecord(duplicate);
+        customer.setName(externalCustomer.getName());
+        customerDataAccess.createOrUpdateRecord(customer);
     }
 
     private void updateShoppingList(ExternalCustomer externalCustomer, Customer customer) {

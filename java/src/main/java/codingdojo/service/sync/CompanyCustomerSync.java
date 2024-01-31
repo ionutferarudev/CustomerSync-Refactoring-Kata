@@ -18,12 +18,17 @@ class CompanyCustomerSync implements TypeCustomerSync {
     public CustomerMatches loadThenSyncCustomData(ExternalCustomer externalCustomer) {
         CustomerMatches customerMatches = companyCustomerLoader.loadCompanyCustomer(externalCustomer);
         Customer customer = customerMatches.getCustomer();
-        if (customer == null) {
+
+        if (customerMatches.isNewCustomer()) {
             customer = new Customer();
             customer.setExternalId(externalCustomer.getExternalId());
             customer.setMasterExternalId(externalCustomer.getExternalId());
             customerMatches.setCustomer(customer);
+        } else if (customerMatches.isMatchByCompany()) {
+            customer.setExternalId(externalCustomer.getExternalId());
+            customer.setMasterExternalId(externalCustomer.getExternalId());
         }
+
         customer.setCompanyNumber(externalCustomer.getCompanyNumber());
         customer.setCustomerType(CustomerType.COMPANY);
         return customerMatches;

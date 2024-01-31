@@ -20,12 +20,13 @@ class PersonCustomerSync implements TypeCustomerSync {
     public CustomerMatches loadThenSyncCustomData(ExternalCustomer externalCustomer) {
         CustomerMatches customerMatches = personCustomerLoader.loadPerson(externalCustomer);
         Customer customer = customerMatches.getCustomer();
-        if (customer == null) {
+        if (customerMatches.isNewCustomer()) {
             customer = new Customer();
             customer.setExternalId(externalCustomer.getExternalId());
             customer.setMasterExternalId(externalCustomer.getExternalId());
             customerMatches.setCustomer(customer);
         }
+
         if (!Objects.equals(externalCustomer.getBonusPointsBalance(), customer.getBonusPointsBalance())) {
             customer.setBonusPointsBalance(externalCustomer.getBonusPointsBalance());
         }

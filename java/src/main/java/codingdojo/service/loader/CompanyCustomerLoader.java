@@ -5,6 +5,10 @@ import codingdojo.domain.data.model.Customer;
 import codingdojo.domain.data.model.CustomerType;
 import codingdojo.external.ExternalCustomer;
 import codingdojo.service.exception.ConflictException;
+import codingdojo.service.loader.CustomerMatches.CustomerDuplicate;
+
+import static codingdojo.service.loader.CustomerMatches.CustomerDuplicate.EXISTING_CUSTOMER;
+import static codingdojo.service.loader.CustomerMatches.CustomerDuplicate.NEW_CUSTOMER;
 
 public class CompanyCustomerLoader {
 
@@ -29,17 +33,9 @@ public class CompanyCustomerLoader {
     private void validateThenAppendMatchesByExternalId(Customer matchByExternalId, CustomerMatches matches,
                                                        ExternalCustomer externalCustomer) {
         validateType(matchByExternalId, externalCustomer);
-
-        String externalId = externalCustomer.getExternalId();
-        String companyNumber = externalCustomer.getCompanyNumber();
-
         matches.setCustomer(matchByExternalId);
-        if (!companyNumber.equals(matchByExternalId.getCompanyNumber())) {
-            matches.getCustomer().setMasterExternalId(null);
-            matches.addDuplicate(matchByExternalId);
-            matches.setCustomer(null);
-        }
-        appendMatchesByMasterExternalId(matches, externalId);
+        appendNoMatchByCompanyNumber(matchByExternalId, matches, externalCustomer.getCompanyNumber());
+        appendMatchesByMasterExternalId(matches, externalCustomer.getExternalId());
     }
 
     private void validateType(Customer matchByExternalId, ExternalCustomer externalCustomer) {
@@ -49,10 +45,19 @@ public class CompanyCustomerLoader {
         }
     }
 
+    private void appendNoMatchByCompanyNumber(Customer matchByExternalId, CustomerMatches matches, String companyNumber) {
+        if (companyNumber.equals(matchByExternalId.getCompanyNumber())) {
+            return;
+        }
+        matches.getCustomer().setMasterExternalId(null);
+        matches.addDuplicate(new CustomerDuplicate(EXISTING_CUSTOMER, matchByExternalId));
+        matches.setCustomer(null);
+    }
+
     private void appendMatchesByMasterExternalId(CustomerMatches matches, String externalId) {
         Customer matchByMasterId = customerDataAccess.loadByMasterExternalId(externalId);
         if (matchByMasterId != null) {
-            matches.addDuplicate(matchByMasterId);
+            matches.addDuplicate(new CustomerDuplicate(EXISTING_CUSTOMER, matchByMasterId));
         }
     }
 
@@ -61,15 +66,12 @@ public class CompanyCustomerLoader {
         if (matchByCompanyNumber == null) {
             return;
         }
-        String externalId = externalCustomer.getExternalId();
-        String companyNumber = externalCustomer.getCompanyNumber();
+        validateCustomerExternalId(matchByCompanyNumber.getExternalId(),
+                externalCustomer.getExternalId(), externalCustomer.getCompanyNumber());
 
-        validateCustomerExternalId(matchByCompanyNumber.getExternalId(), externalId, companyNumber);
-
-        matchByCompanyNumber.setExternalId(externalId);
-        matchByCompanyNumber.setMasterExternalId(externalId);
+        matches.setMatchByCompany();
         matches.setCustomer(matchByCompanyNumber);
-        matches.addDuplicate(null);
+        matches.addDuplicate(new CustomerDuplicate(NEW_CUSTOMER, new Customer()));
     }
 
     private void validateCustomerExternalId(String customerExternalId, String externalId, String companyNumber) {
